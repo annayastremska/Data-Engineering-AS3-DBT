@@ -1,0 +1,21 @@
+product_id,product_name,category,subcategory,unit_price
+1,Espresso,Coffee,Hot,2.50
+2,Latte,Coffee,Hot,3.50
+3,Cappuccino,Coffee,Hot,3.80
+4,Americano,Coffee,Hot,2.80
+5,Flat White,Coffee,Hot,3.90
+6,Mocha,Coffee,Hot,4.20
+7,Iced Latte,Coffee,Cold,3.70
+8,Iced Americano,Coffee,Cold,3.00
+9,Cold Brew,Coffee,Cold,3.50
+10,Matcha Latte,Tea,Hot,4.00
+11,Green Tea,Tea,Hot,2.20
+12,Black Tea,Tea,Hot,2.00
+13,Herbal Tea,Tea,Hot,2.50
+14,Croissant,Food,Pastry,2.20
+15,Chocolate Croissant,Food,Pastry,2.70
+16,Blueberry Muffin,Food,Pastry,2.50
+17,Bagel,Food,Bakery,1.80
+18,Avocado Toast,Food,Meal,5.50
+19,Chicken Sandwich,Food,Meal,6.20
+20,Cheesecake,Food,Dessert,4.50

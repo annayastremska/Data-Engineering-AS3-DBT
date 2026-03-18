@@ -1,0 +1,13 @@
+customer_id,first_name,last_name,gender,signup_date,city
+101,Anna,Ivanova,F,2023-01-15,Kyiv
+102,Mark,Petrenko,M,2023-02-10,Lviv
+103,Olena,Shevchenko,F,2023-03-05,Kyiv
+104,Dmytro,Koval,M,2023-04-20,Odessa
+105,Iryna,Bondar,F,2023-05-11,Kharkiv
+106,Serhii,Melnyk,M,2023-06-18,Kyiv
+107,Nazar,Shevchuk,M,2023-07-02,Lviv
+108,Yulia,Krut,F,2023-08-14,Kyiv
+109,Oleh,Kravets,M,2023-09-10,Odessa
+110,Maryna,Boiko,F,2023-10-01,Kharkiv
+111,Petro,Lysenko,M,2023-11-11,Kyiv
+112,Svitlana,Danyliuk,F,2023-12-05,Lviv

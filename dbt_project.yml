@@ -1,0 +1,23 @@
+name: 'coffee_shop'
+version: '1.0'
+config-version: 2
+
+profile: 'coffee_shop_duckdb'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+models:
+  coffee_shop:
+    raw:
+      materialized: view
+    stage:
+      materialized: view
+    mart:
+      materialized: table
+
+seeds:
+  coffee_shop:
+    +quote_columns: false

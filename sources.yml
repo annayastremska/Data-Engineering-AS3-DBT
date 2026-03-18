@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: coffee_shop_raw
+    schema: main
+    tables:
+      - name: coffee_shop_transactions
+        description: "Raw coffee shop transactions"
+      - name: products_in_stock
+        description: "Raw products in stock"

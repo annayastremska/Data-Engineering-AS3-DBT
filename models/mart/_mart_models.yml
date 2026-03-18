@@ -1,0 +1,154 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Customer dimension with signup cohort labels. One row per customer."
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: gender
+        tests:
+          - accepted_values:
+              values: ['F', 'M']
+      - name: signup_cohort
+        tests:
+          - not_null
+
+  - name: dim_stores
+    description: "Store dimension with size classification and years in operation."
+    columns:
+      - name: store_id
+        tests:
+          - unique
+          - not_null
+      - name: store_size_category
+        tests:
+          - accepted_values:
+              values: ['Small', 'Medium', 'Large']
+
+  - name: dim_products
+    description: "Product dimension with price tier. One row per product."
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+      - name: price_tier
+        tests:
+          - accepted_values:
+              values: ['Budget', 'Standard', 'Premium']
+      - name: product_group
+        tests:
+          - accepted_values:
+              values: ['Beverage', 'Food']
+
+  - name: dim_employees
+    description: "Employee dimension joined to stores. Includes tenure and salary band."
+    columns:
+      - name: employee_id
+        tests:
+          - unique
+          - not_null
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_stores')
+              field: store_id
+      - name: salary_band
+        tests:
+          - accepted_values:
+              values: ['Junior', 'Mid', 'Senior']
+
+  - name: fct_transactions
+    description: >
+      Core transaction fact table joined with product dimension.
+      Incremental: new records loaded by transaction_date.
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: gross_revenue
+        tests:
+          - not_null
+      - name: transaction_qty
+        tests:
+          - not_null
+
+  - name: fct_daily_revenue
+    description: >
+      Daily revenue aggregated per store.
+      Incremental: appends new days, merges on store_id + transaction_date.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: transaction_date
+        tests:
+          - not_null
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: fct_product_sales
+    description: >
+      Monthly product-level sales aggregation.
+      Incremental: keyed on product_id + year + month.
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: mart_store_performance
+    description: >
+      Monthly store performance with revenue rankings and growth rates.
+      Uses rank(), lag(), and sum() over() window functions.
+      Incremental: keyed on store_id + year + month.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: monthly_revenue
+        tests:
+          - not_null
+
+  - name: mart_product_performance
+    description: >
+      Monthly product performance with category rankings and cumulative revenue.
+      Uses dense_rank(), lag(), and sum() over() window functions.
+      Incremental: keyed on product_id + year + month.
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+
+  - name: mart_hourly_patterns
+    description: >
+      Hourly transaction patterns per store.
+      Answers: which hours drive peak revenue?
+      Uses rank() and sum() over() window functions.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: hour_of_day
+        tests:
+          - not_null
+      - name: peak_period
+        tests:
+          - accepted_values:
+              values: ['Morning Peak', 'Lunch Peak', 'Evening Peak', 'Off-Peak']
+
+  - name: mart_employee_store_summary
+    description: "Headcount and payroll cost summary per store."
+    columns:
+      - name: store_id
+        tests:
+          - unique
+          - not_null

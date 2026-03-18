@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned and standardized customer records from the customers seed."
+    columns:
+      - name: customer_id
+        description: "Primary key."
+        tests:
+          - unique
+          - not_null
+      - name: gender
+        tests:
+          - accepted_values:
+              arguments:
+              values: ['F', 'M']
+      - name: signup_date
+        tests:
+          - not_null
+
+  - name: stg_stores
+    description: "Cleaned store master data."
+    columns:
+      - name: store_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_employees
+    description: "Cleaned employee records with role and salary."
+    columns:
+      - name: employee_id
+        tests:
+          - unique
+          - not_null
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_stores')
+              field: store_id
+
+  - name: stg_products
+    description: "Cleaned product catalog with category flags."
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+      - name: product_group
+        tests:
+          - accepted_values:
+              values: ['Beverage', 'Food']
+
+  - name: stg_products_in_stock
+    description: "Store–product availability bridge table."
+    columns:
+      - name: store_product_id
+        tests:
+          - unique
+          - not_null
+      - name: store_id
+        tests:
+          - relationships:
+              to: ref('stg_products_in_stock')
+              field: store_id
+      - name: product_id
+        tests:
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+
+  - name: stg_coffee_shop_transactions
+    description: >
+      Cleaned transaction fact table from the NYC coffee shop dataset.
+      unit_price comma-decimal issue resolved. Date parsed from M/D/YYYY.
+      gross_revenue derived as unit_price * transaction_qty.
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: transaction_qty
+        tests:
+          - not_null
+      - name: unit_price
+        tests:
+          - not_null
+      - name: gross_revenue
+        tests:
+          - not_null

@@ -1,0 +1,11 @@
+
+    
+    
+    truncate table "coffee_shop"."main"."employees";
+    -- dbt seed --
+    
+          COPY "coffee_shop"."main"."employees" FROM 'C:\Users\Lenovo\Desktop\data_engineering\as_3\seeds\employees.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+        
+
+;
+  
