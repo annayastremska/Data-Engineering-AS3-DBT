@@ -22,7 +22,7 @@ The business is a small chain of **three NYC coffee shop locations** (Astoria, L
 |---|---|
 | **dbt Core** | Transformation framework |
 | **DuckDB** | Local analytical warehouse (`coffee_shop.duckdb`) |
-| **CSV seeds** | Source data (6 seed files) |
+| **CSV seeds** | Reference data (4 seed files) |
 
 ---
 
@@ -60,13 +60,16 @@ The `profiles.yml` is included in the repo root — no `~/.dbt/profiles.yml` set
 
 ```
 coffee_shop/
+├── data/
+│   ├── coffee_shop_transactions.csv   ← 149 000+ real NYC transactions
+│   ├── products_in_stock.csv          ← store–product availability
+│   └── create_tables.sql              ← loads the two CSVs into DuckDB
+│
 ├── seeds/
 │   ├── customers.csv
 │   ├── employees.csv
 │   ├── products.csv
-│   ├── products_in_stock.csv
-│   ├── stores.csv
-│   └── coffee_shop_transactions.csv   ← 149 000+ real NYC transactions
+│   └── stores.csv
 │
 ├── models/
 │   ├── raw/                           ← 6 models  (view)
@@ -88,20 +91,34 @@ coffee_shop/
 
 ---
 
-## Source Data (Seeds)
+## Source Data
 
-All source data lives in `seeds/` as CSV files loaded via `dbt seed`.
+The project has two distinct types of source data.
 
-| Seed file | Description | Key columns |
+### DuckDB Sources — `data/` (registered in `sources.yml`)
+
+These two large CSV files are loaded directly into DuckDB as native tables using `read_csv_auto` via `data/create_tables.sql`. They are **not** dbt seeds — they are registered as dbt **sources** in `sources.yml` and referenced in raw models via `source()`.
+
+| File | Description | Key columns |
 |---|---|---|
 | `coffee_shop_transactions.csv` | 149 000+ NYC transactions (Jan–Jun 2023) | `transaction_id`, `transaction_date`, `store_id`, `product_id`, `unit_price`, `transaction_qty` |
 | `products_in_stock.csv` | Store–product availability bridge | `store_product_id`, `store_id`, `product_id`, `available_since` |
+
+Load them before running dbt:
+```bash
+duckdb coffee_shop.duckdb < data/create_tables.sql
+```
+
+### dbt Seeds — `seeds/` (loaded via `dbt seed`)
+
+Four smaller reference tables managed directly by dbt and referenced downstream via `ref()`.
+
+| Seed file | Description | Key columns |
+|---|---|---|
 | `customers.csv` | 12 customer records | `customer_id`, `first_name`, `last_name`, `gender`, `signup_date`, `city` |
 | `employees.csv` | 18 employee records across 3 stores | `employee_id`, `role`, `hire_date`, `store_id`, `salary` |
 | `products.csv` | 20 product definitions | `product_id`, `product_name`, `category`, `subcategory`, `unit_price` |
 | `stores.csv` | 3 NYC store locations | `store_id`, `store_name`, `city`, `region`, `opening_date`, `store_size_sq_m` |
-
-Two of the seed tables (`coffee_shop_transactions`, `products_in_stock`) are also registered as **dbt sources** in `sources.yml`, giving them source freshness tracking and lineage visibility. The remaining four seeds are referenced directly via `ref()`.
 
 ---
 
@@ -307,8 +324,8 @@ Key findings the mart layer surfaces:
 
 | Term | How it appears in this project |
 |---|---|
-| **Seed** | Six CSV files in `seeds/` loaded via `dbt seed` — the starting point for all data |
-| **Source** | `coffee_shop_transactions` and `products_in_stock` declared in `sources.yml` for lineage tracking |
+| **Seed** | Four CSV files in `seeds/` (customers, employees, products, stores) loaded via `dbt seed` and referenced via `ref()` |
+| **Source** | `coffee_shop_transactions` and `products_in_stock` loaded into DuckDB from `data/` via `create_tables.sql`, declared in `sources.yml`, and referenced via `source()` |
 | **Model** | 23 `.sql` files across raw / stage / mart that define transformations as SELECT statements |
 | **Materialization** | Raw and stage → `view`; dimensions and mart summaries → `table`; facts and performance marts → `incremental` |
 | **Incremental model** | 5 models that only process rows newer than the current table maximum, controlled by `unique_key` and `on_schema_change` |
@@ -319,6 +336,6 @@ Key findings the mart layer surfaces:
 | **Window function** | Used across 4 mart models for ranking, running totals, and period-over-period comparisons |
 | **Surrogate key** | `store_product_id` in `stg_products_in_stock` acts as composite surrogate for the store–product bridge |
 | **Grain** | `fct_transactions` = one row per transaction; `fct_daily_revenue` = one row per store per day; `fct_product_sales` = one row per product per month |
-| **Lineage** | Seeds/sources → Raw → Stage → Mart; visualised via `dbt docs generate && dbt docs serve` |
+| **Lineage** | DuckDB sources + seeds → Raw → Stage → Mart; visualised via `dbt docs generate && dbt docs serve` |
 | **Dependency** | Managed via `ref()` and `source()` — dbt resolves build order automatically |
 | **Data quality** | Enforced through YAML generic tests, singular SQL tests, and `on_schema_change='fail'` guards on all incremental models |
